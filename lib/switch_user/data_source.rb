@@ -33,7 +33,15 @@ module SwitchUser
       scope_regexp = /\A#{scope}_/
       return unless scope_id =~ scope_regexp
 
-      user = loader.call.where(identifier => scope_id.sub(scope_regexp, '')).first
+      collection = loader.call
+      id_value = scope_id.sub(scope_regexp, '')
+      user =
+        if collection.respond_to?(:where)
+          collection.where(identifier => id_value).first
+        else
+          collection.detect { |u| u.send(identifier) == id_value }
+        end
+    
       Record.new(user, self)
     end
   end
